@@ -1,0 +1,15 @@
+SELECT 
+    o.order_id,
+    o.order_number,
+    o.order_date,
+    SUM(oi.quantity) AS product_quantity,
+    SUM(mw.quantity * mp.price * oi.quantity) AS total_materials_cost,
+    SUM(mw.quantity * mp.price * oi.quantity) AS total_order_cost
+FROM orders o
+JOIN orderitems oi ON o.order_id = oi.act_id
+JOIN productionoutputs po ON oi.product_id = po.product_id
+JOIN materialwriteoffs mw ON po.output_id = mw.output_id
+JOIN materialprice mp ON mw.material_id = mp.material_id 
+    AND mp.date_from <= o.order_date 
+    AND (mp.date_to IS NULL OR mp.date_to >= o.order_date)
+GROUP BY o.order_id, o.order_number, o.order_date;
